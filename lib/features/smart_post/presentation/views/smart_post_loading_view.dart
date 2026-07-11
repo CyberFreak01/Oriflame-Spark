@@ -16,10 +16,10 @@ class SmartPostLoadingView extends StatefulWidget {
 
 class _SmartPostLoadingViewState extends State<SmartPostLoadingView> {
   static const _labels = [
-    'Preparing popular content for you',
-    'Crafting a caption to boost engagement',
-    'Adding your personal referral link and code',
-    'Finding trending songs on other social media',
+    'Preparing popular\ncontent for you',
+    'Crafting a caption to\nboost engagement',
+    'Adding your personal\nreferral link and code',
+    'Finding trending songs on\nother social media',
   ];
 
   late List<_StepState> _states;

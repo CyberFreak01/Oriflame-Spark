@@ -21,6 +21,19 @@ class _EditCaptionScreenState extends State<EditCaptionScreen> {
 
   late final TextEditingController _controller = TextEditingController(text: _initialCaption);
   bool _hasChanges = false;
+  bool _isRegenerating = false;
+
+  Future<void> _handleRegenerate() async {
+    FocusScope.of(context).unfocus();
+    setState(() => _isRegenerating = true);
+    await Future.delayed(const Duration(seconds: 3));
+    if (mounted) {
+      setState(() {
+        _isRegenerating = false;
+        // Simulating the text is regenerated (we just keep the same text for the demo)
+      });
+    }
+  }
 
   @override
   void initState() {
@@ -78,21 +91,21 @@ class _EditCaptionScreenState extends State<EditCaptionScreen> {
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: TextField(
-                  controller: _controller,
-                  maxLines: null,
-                  style: AppText.editCaptionBody,
-                  decoration: const InputDecoration(border: InputBorder.none),
-                ),
+                child: _isRegenerating 
+                    ? const _CaptionShimmer() 
+                    : TextField(
+                        controller: _controller,
+                        maxLines: null,
+                        style: AppText.editCaptionBody,
+                        decoration: const InputDecoration(border: InputBorder.none),
+                      ),
               ),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          // Connect to AI Regeneration logic
-        },
+      floatingActionButton: _isRegenerating ? null : FloatingActionButton.extended(
+        onPressed: _handleRegenerate,
         backgroundColor: AppColors.chipDark,
         foregroundColor: Colors.white,
         elevation: 4,
@@ -112,6 +125,52 @@ class _EditCaptionScreenState extends State<EditCaptionScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _CaptionShimmer extends StatefulWidget {
+  const _CaptionShimmer();
+
+  @override
+  State<_CaptionShimmer> createState() => _CaptionShimmerState();
+}
+
+class _CaptionShimmerState extends State<_CaptionShimmer> with SingleTickerProviderStateMixin {
+  late final AnimationController _animController;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1000))..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animController,
+      builder: (context, child) {
+        return Opacity(
+          opacity: 0.3 + (_animController.value * 0.4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(height: 18, width: double.infinity, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(4)), margin: const EdgeInsets.only(bottom: 12)),
+              Container(height: 18, width: double.infinity, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(4)), margin: const EdgeInsets.only(bottom: 12)),
+              Container(height: 18, width: MediaQuery.of(context).size.width * 0.8, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(4)), margin: const EdgeInsets.only(bottom: 12)),
+              const SizedBox(height: 16),
+              Container(height: 18, width: MediaQuery.of(context).size.width * 0.6, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(4)), margin: const EdgeInsets.only(bottom: 12)),
+              Container(height: 18, width: MediaQuery.of(context).size.width * 0.4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(4))),
+            ],
+          ),
+        );
+      },
     );
   }
 }
